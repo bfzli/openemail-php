@@ -1,0 +1,49 @@
+{
+    "name": "openemail/sdk",
+    "description": "The official PHP SDK for the OpenEmail API. Send email and broadcasts, work with threads, drafts, labels, templates, rules, webhooks, tracking, contacts, audiences, sign-up forms, domains, suppressions, files, API keys, roles, members, mailbox imports and disposable inboxes from PHP.",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": [
+        "openemail",
+        "sdk",
+        "api",
+        "api client",
+        "email",
+        "email api",
+        "send email",
+        "transactional email",
+        "inbox",
+        "mailbox",
+        "email templates",
+        "webhooks",
+        "temp mail",
+        "psr-18"
+    ],
+    "homepage": "https://openemail.uk",
+    "authors": [
+        {
+            "name": "OpenEmail",
+            "homepage": "https://openemail.uk"
+        }
+    ],
+    "support": {
+        "docs": "https://openemail.uk/docs/php",
+        "issues": "https://openemail.uk/contact"
+    },
+    "require": {
+        "php": "^8.2",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "Send the SDK's requests through Guzzle, wrapped in OpenEmail\\Http\\Psr18HttpClient.",
+        "symfony/http-client": "Send the SDK's requests through Symfony HttpClient's Psr18Client, wrapped in OpenEmail\\Http\\Psr18HttpClient. Also install psr/http-client and nyholm/psr7.",
+        "php-http/discovery": "Finds an installed PSR-17 implementation for OpenEmail\\Http\\Psr18HttpClient when you do not pass the factories yourself.",
+        "ext-mbstring": "Lets OpenEmail::resolveLanguage() match a language name written in capitals outside ASCII, such as ESPAÑOL."
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenEmail\\": "src/"
+        }
+    }
+}
