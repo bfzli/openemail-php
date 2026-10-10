@@ -100,9 +100,15 @@ final class Templates extends Resource
         return $this->call($this->fill(ApiPaths::TEMPLATE_VERSION, id: $idOrSlug, version: $version), apiKey: $apiKey);
     }
 
-    public function publish(string $idOrSlug, #[\SensitiveParameter] ?string $apiKey = null): array
+    public function publish(string $idOrSlug, ?int $expectedVersion = null, #[\SensitiveParameter] ?string $apiKey = null): array
     {
-        return $this->call($this->fill(ApiPaths::TEMPLATE_VERSIONS, id: $idOrSlug), 'POST', repeatable: true, apiKey: $apiKey);
+        return $this->call(
+            $this->fill(ApiPaths::TEMPLATE_VERSIONS, id: $idOrSlug),
+            'POST',
+            body: $expectedVersion === null ? null : ['expectedVersion' => $expectedVersion],
+            repeatable: true,
+            apiKey: $apiKey,
+        );
     }
 
     public function restoreVersion(string $idOrSlug, int $version, ?array $body = null, #[\SensitiveParameter] ?string $apiKey = null): array

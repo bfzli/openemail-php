@@ -15,12 +15,13 @@ final class Tracking extends Resource
         ?int $days = null,
         ?int $minutes = null,
         ?string $grain = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): Page {
-        return $this->fetchPage(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->fetchPage(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain, $address), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function listAll(
@@ -29,12 +30,13 @@ final class Tracking extends Resource
         ?int $days = null,
         ?int $minutes = null,
         ?string $grain = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): array {
-        return $this->collectAll(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->collectAll(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain, $address), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function iterate(
@@ -43,12 +45,13 @@ final class Tracking extends Resource
         ?int $days = null,
         ?int $minutes = null,
         ?string $grain = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): \Generator {
-        return $this->iteratePages(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->iteratePages(ApiPaths::TRACKING, $this->listQuery($opened, $clicked, $days, $minutes, $grain, $address), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function getStats(
@@ -56,10 +59,11 @@ final class Tracking extends Resource
         ?int $minutes = null,
         ?string $grain = null,
         ?int $offsetMinutes = null,
+        ?string $address = null,
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): array {
-        return $this->call(ApiPaths::TRACKING_STATS, query: $this->query(days: $days, minutes: $minutes, grain: $grain, offsetMinutes: $offsetMinutes), apiKey: $apiKey);
+        return $this->call(ApiPaths::TRACKING_STATS, query: $this->query(days: $days, minutes: $minutes, grain: $grain, offsetMinutes: $offsetMinutes, address: $address), apiKey: $apiKey);
     }
 
     public function get(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
@@ -97,9 +101,9 @@ final class Tracking extends Resource
         return $this->iteratePages($this->fill(ApiPaths::TRACKED_CLICKS, id: $id), $this->hitQuery($includeMachine), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
-    private function listQuery(?bool $opened, ?bool $clicked, ?int $days, ?int $minutes, ?string $grain): array
+    private function listQuery(?bool $opened, ?bool $clicked, ?int $days, ?int $minutes, ?string $grain, ?string $address): array
     {
-        return $this->query(opened: $this->flag($opened), clicked: $this->flag($clicked), days: $days, minutes: $minutes, grain: $grain);
+        return $this->query(opened: $this->flag($opened), clicked: $this->flag($clicked), days: $days, minutes: $minutes, grain: $grain, address: $address);
     }
 
     private function hitQuery(?bool $includeMachine): array

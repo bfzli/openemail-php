@@ -78,7 +78,57 @@ final class Calendar extends Resource
 
     public function respondToEvent(string $id, array $body, #[\SensitiveParameter] ?string $apiKey = null): array
     {
-        return $this->call($this->fill(ApiPaths::CALENDAR_EVENT_RESPOND, id: $id), 'POST', body: $body, apiKey: $apiKey);
+        return $this->call($this->fill(ApiPaths::CALENDAR_EVENT_RESPOND, id: $id), 'POST', body: $this->answerWire($body), apiKey: $apiKey);
+    }
+
+    public function declineProposal(string $id, array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_EVENT_DECLINE_PROPOSAL, id: $id), 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function listFeeds(#[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->fetchList(ApiPaths::CALENDAR_FEEDS, apiKey: $apiKey);
+    }
+
+    public function createFeed(array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::CALENDAR_FEEDS, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function resetFeed(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_FEED_RESET, id: $id), 'POST', apiKey: $apiKey);
+    }
+
+    public function deleteFeed(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_FEED, id: $id), 'DELETE', apiKey: $apiKey);
+    }
+
+    public function listSubscriptions(#[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->fetchList(ApiPaths::CALENDAR_SUBSCRIPTIONS, apiKey: $apiKey);
+    }
+
+    public function createSubscription(array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::CALENDAR_SUBSCRIPTIONS, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function updateSubscription(string $id, array $patch, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_SUBSCRIPTION, id: $id), 'PATCH', body: $patch, apiKey: $apiKey);
+    }
+
+    public function refreshSubscription(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_SUBSCRIPTION_REFRESH, id: $id), 'POST', apiKey: $apiKey);
+    }
+
+    public function deleteSubscription(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_SUBSCRIPTION, id: $id), 'DELETE', apiKey: $apiKey);
     }
 
     private function rangeQuery(string|\DateTimeInterface $from, string|\DateTimeInterface $to, ?string $timezone): array
@@ -89,6 +139,17 @@ final class Calendar extends Resource
     private function eventWire(array $body): array
     {
         foreach (['start', 'end'] as $field) {
+            if (\array_key_exists($field, $body)) {
+                $body[$field] = $this->instant($body[$field]);
+            }
+        }
+
+        return $body;
+    }
+
+    private function answerWire(array $body): array
+    {
+        foreach (['proposedStart', 'proposedEnd'] as $field) {
             if (\array_key_exists($field, $body)) {
                 $body[$field] = $this->instant($body[$field]);
             }

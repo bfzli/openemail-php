@@ -184,8 +184,66 @@ final class Contacts extends Resource
         );
     }
 
+    public function listCards(
+        ?string $email = null,
+        ?bool $withoutEmail = null,
+        ?int $limit = null,
+        ?string $cursor = null,
+        #[\SensitiveParameter]
+        ?string $apiKey = null,
+    ): Page {
+        return $this->fetchPage(ApiPaths::CONTACT_CARDS, $this->cardQuery($email, $withoutEmail), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function listAllCards(
+        ?string $email = null,
+        ?bool $withoutEmail = null,
+        ?int $limit = null,
+        ?string $cursor = null,
+        #[\SensitiveParameter]
+        ?string $apiKey = null,
+    ): array {
+        return $this->collectAll(ApiPaths::CONTACT_CARDS, $this->cardQuery($email, $withoutEmail), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function iterateCards(
+        ?string $email = null,
+        ?bool $withoutEmail = null,
+        ?int $limit = null,
+        ?string $cursor = null,
+        #[\SensitiveParameter]
+        ?string $apiKey = null,
+    ): \Generator {
+        return $this->iteratePages(ApiPaths::CONTACT_CARDS, $this->cardQuery($email, $withoutEmail), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function getCard(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CONTACT_CARD, id: $id), apiKey: $apiKey);
+    }
+
+    public function createCard(array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::CONTACT_CARDS, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function updateCard(string $id, array $patch, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CONTACT_CARD, id: $id), 'PATCH', body: $patch, repeatable: true, apiKey: $apiKey);
+    }
+
+    public function deleteCard(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CONTACT_CARD, id: $id), 'DELETE', apiKey: $apiKey);
+    }
+
     private function peopleQuery(?string $q, ?string $email, ?string $sort, ?bool $blocked): array
     {
         return $this->query(q: $q, email: $email, sort: $sort, blocked: $this->flag($blocked));
+    }
+
+    private function cardQuery(?string $email, ?bool $withoutEmail): array
+    {
+        return $this->query(email: $email, withoutEmail: $this->flag($withoutEmail));
     }
 }

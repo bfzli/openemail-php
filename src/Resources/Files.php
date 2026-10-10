@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace OpenEmail\Resources;
 
-use OpenEmail\Exception\InvalidArgumentException;
 use OpenEmail\Internal\ApiPaths;
-use OpenEmail\Internal\Defaults;
-use OpenEmail\Internal\Messages;
-use OpenEmail\Internal\RawBody;
 use OpenEmail\Result\Page;
 
 final class Files extends Resource
@@ -155,23 +151,5 @@ final class Files extends Resource
             until: $this->instant($until),
             sort: $sort,
         );
-    }
-
-    private function uploadTimeout(): float
-    {
-        $base = $this->transport->timeout;
-
-        return $base > 0 ? max($base, (float) Defaults::UPLOAD_TIMEOUT) : $base;
-    }
-
-    private static function uploadName(mixed $data, ?string $filename): string
-    {
-        $name = trim($filename ?? RawBody::fileName($data) ?? '');
-
-        if ($name === '') {
-            throw new InvalidArgumentException(Messages::FILENAME_REQUIRED);
-        }
-
-        return $name;
     }
 }

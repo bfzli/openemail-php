@@ -32,6 +32,7 @@ use OpenEmail\Resources\Files;
 use OpenEmail\Resources\Forms;
 use OpenEmail\Resources\Imports;
 use OpenEmail\Resources\Keys;
+use OpenEmail\Resources\Knowledge;
 use OpenEmail\Resources\Labels;
 use OpenEmail\Resources\Languages;
 use OpenEmail\Resources\Me;
@@ -55,7 +56,7 @@ use OpenEmail\Resources\Workspaces;
 
 final class OpenEmail
 {
-    public const VERSION = '0.0.1';
+    public const VERSION = '0.0.2';
 
     private static ?self $default = null;
 
@@ -120,6 +121,8 @@ final class OpenEmail
     public readonly Suppressions $suppressions;
 
     public readonly Files $files;
+
+    public readonly Knowledge $knowledge;
 
     public readonly TempMail $tempMail;
 
@@ -208,6 +211,7 @@ final class OpenEmail
         $this->members = new Members($this->raw);
         $this->suppressions = new Suppressions($this->raw);
         $this->files = new Files($this->raw);
+        $this->knowledge = new Knowledge($this->raw);
         $this->tempMail = new TempMail($this->raw);
         $this->exports = new Exports($this->raw);
         $this->chats = new Chats($this->raw);

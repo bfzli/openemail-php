@@ -18,6 +18,8 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateFrom = null,
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
+        ?bool $semantic = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
@@ -25,7 +27,7 @@ final class Threads extends Resource
     ): Page {
         return $this->fetchPage(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -41,6 +43,8 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateFrom = null,
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
+        ?bool $semantic = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
@@ -48,7 +52,7 @@ final class Threads extends Resource
     ): array {
         return $this->collectAll(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -64,6 +68,8 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateFrom = null,
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
+        ?bool $semantic = null,
+        ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
         #[\SensitiveParameter]
@@ -71,7 +77,7 @@ final class Threads extends Resource
     ): \Generator {
         return $this->iteratePages(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -158,6 +164,11 @@ final class Threads extends Resource
         return $this->call($this->fill(ApiPaths::THREAD_SUMMARY, id: $id), apiKey: $apiKey);
     }
 
+    public function replySuggestions(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::THREAD_REPLY_SUGGESTIONS, id: $id), apiKey: $apiKey);
+    }
+
     public function restore(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call($this->fill(ApiPaths::THREAD_RESTORE, id: $id), 'POST', repeatable: true, apiKey: $apiKey);
@@ -186,6 +197,8 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateFrom,
         string|\DateTimeInterface|null $dateTo,
         ?bool $fromContacts,
+        ?bool $semantic,
+        ?string $address,
     ): array {
         return $this->query(
             folder: $folder,
@@ -195,6 +208,8 @@ final class Threads extends Resource
             dateFrom: $this->instant($dateFrom),
             dateTo: $this->instant($dateTo),
             fromContacts: $this->flag($fromContacts),
+            semantic: $this->flag($semantic),
+            address: $address,
         );
     }
 }

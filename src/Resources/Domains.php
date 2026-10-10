@@ -177,6 +177,47 @@ final class Domains extends Resource
         return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_LOGIN, id: $id, addressId: $addressId), 'DELETE', apiKey: $apiKey);
     }
 
+    public function getMailAppSettings(string $id, string $addressId, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_MAIL_APPS, id: $id, addressId: $addressId), apiKey: $apiKey);
+    }
+
+    public function updateMailAppSettings(string $id, string $addressId, array $patch, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_MAIL_APPS, id: $id, addressId: $addressId), 'PATCH', body: $patch, repeatable: true, apiKey: $apiKey);
+    }
+
+    public function listAppPasswords(string $id, string $addressId, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_APP_PASSWORDS, id: $id, addressId: $addressId), apiKey: $apiKey);
+    }
+
+    public function createAppPassword(string $id, string $addressId, array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_APP_PASSWORDS, id: $id, addressId: $addressId), 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function updateAppPassword(string $id, string $addressId, string $passwordId, array $patch, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(
+            $this->fill(ApiPaths::DOMAIN_ADDRESS_APP_PASSWORD, id: $id, addressId: $addressId, passwordId: $passwordId),
+            'PATCH',
+            body: $patch,
+            repeatable: true,
+            apiKey: $apiKey,
+        );
+    }
+
+    public function deleteAppPassword(string $id, string $addressId, string $passwordId, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_APP_PASSWORD, id: $id, addressId: $addressId, passwordId: $passwordId), 'DELETE', apiKey: $apiKey);
+    }
+
+    public function sendMailAppSetup(string $id, string $addressId, array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::DOMAIN_ADDRESS_MAIL_APP_SETUP, id: $id, addressId: $addressId), 'POST', body: $body, apiKey: $apiKey);
+    }
+
     public function getDns(string $id, ?bool $refresh = null, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call($this->fill(ApiPaths::DOMAIN_DNS, id: $id), query: $this->query(refresh: $refresh), apiKey: $apiKey);

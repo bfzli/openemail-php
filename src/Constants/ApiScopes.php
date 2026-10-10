@@ -42,6 +42,8 @@ final class ApiScopes
     public const KEYS_MANAGE = 'keys:manage';
     public const FORMS_READ = 'forms:read';
     public const FORMS_WRITE = 'forms:write';
+    public const KNOWLEDGE_READ = 'knowledge:read';
+    public const KNOWLEDGE_WRITE = 'knowledge:write';
     public const BILLING_READ = 'billing:read';
     public const BILLING_WRITE = 'billing:write';
     public const ACCOUNT_READ = 'account:read';
@@ -86,6 +88,8 @@ final class ApiScopes
             self::KEYS_MANAGE,
             self::FORMS_READ,
             self::FORMS_WRITE,
+            self::KNOWLEDGE_READ,
+            self::KNOWLEDGE_WRITE,
             self::BILLING_READ,
             self::BILLING_WRITE,
             self::ACCOUNT_READ,

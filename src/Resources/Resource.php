@@ -6,6 +6,8 @@ namespace OpenEmail\Resources;
 
 use OpenEmail\Constants\ErrorTypes;
 use OpenEmail\Exception\ApiException;
+use OpenEmail\Exception\InvalidArgumentException;
+use OpenEmail\Internal\Defaults;
 use OpenEmail\Internal\Endpoint;
 use OpenEmail\Internal\Messages;
 use OpenEmail\Internal\Pagination;
@@ -178,6 +180,24 @@ abstract class Resource
     protected function rawContentType(mixed $data, ?string $contentType): ?string
     {
         return RawBody::contentType($data, $contentType);
+    }
+
+    protected function uploadTimeout(): float
+    {
+        $base = $this->transport->timeout;
+
+        return $base > 0 ? max($base, (float) Defaults::UPLOAD_TIMEOUT) : $base;
+    }
+
+    protected static function uploadName(mixed $data, ?string $filename): string
+    {
+        $name = trim($filename ?? RawBody::fileName($data) ?? '');
+
+        if ($name === '') {
+            throw new InvalidArgumentException(Messages::FILENAME_REQUIRED);
+        }
+
+        return $name;
     }
 
     private static function queryKey(string $name): string

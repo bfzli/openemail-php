@@ -22,4 +22,23 @@ final class Tools extends Resource
     {
         return $this->call(ApiPaths::TOOLS_DELIVERABILITY, query: $this->query(domain: $domain), apiKey: $apiKey);
     }
+
+    public function readVerificationCode(#[\SensitiveParameter] array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::TOOLS_VERIFICATION_CODE, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function estimateCost(
+        ?int $sends = null,
+        ?int $domains = null,
+        ?int $people = null,
+        ?int $aiActions = null,
+        ?string $interval = null,
+        #[\SensitiveParameter]
+        ?string $apiKey = null,
+    ): array {
+        $query = $this->query(sends: $sends, domains: $domains, people: $people, aiActions: $aiActions, interval: $interval);
+
+        return $this->call(ApiPaths::TOOLS_COST, query: $query, apiKey: $apiKey);
+    }
 }
