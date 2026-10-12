@@ -12,6 +12,8 @@ final class Wire
 
     private const SCHEDULED_AT = 'scheduledAt';
 
+    private const FOLLOW_UP_AT = 'followUpAt';
+
     private const ATTACHMENTS = 'attachments';
 
     private const FIXED_EXPONENT_MAX = 21;
@@ -26,6 +28,10 @@ final class Wire
     public static function email(array $body): array
     {
         $wire = self::recipients($body);
+
+        if (\array_key_exists(self::FOLLOW_UP_AT, $wire)) {
+            $wire[self::FOLLOW_UP_AT] = self::instant($wire[self::FOLLOW_UP_AT]);
+        }
 
         if (!\array_key_exists(self::ATTACHMENTS, $wire)) {
             return $wire;

@@ -6,6 +6,7 @@ namespace OpenEmail\Resources;
 
 use OpenEmail\Internal\ApiPaths;
 use OpenEmail\Internal\Pagination;
+use OpenEmail\Internal\Protocol;
 use OpenEmail\Result\Page;
 use OpenEmail\Result\PeoplePage;
 
@@ -169,6 +170,21 @@ final class Contacts extends Resource
         return $this->iteratePages($this->fill(ApiPaths::CONTACT_THREADS, email: $email), $this->query(q: $q, sort: $sort), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
+    public function listEvents(string $email, ?string $name = null, ?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): Page
+    {
+        return $this->fetchPage($this->fill(ApiPaths::CONTACT_EVENTS, email: $email), $this->query(name: $name), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function listAllEvents(string $email, ?string $name = null, ?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->collectAll($this->fill(ApiPaths::CONTACT_EVENTS, email: $email), $this->query(name: $name), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function iterateEvents(string $email, ?string $name = null, ?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): \Generator
+    {
+        return $this->iteratePages($this->fill(ApiPaths::CONTACT_EVENTS, email: $email), $this->query(name: $name), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
     public function activity(
         string $email,
         ?int $minutes = null,
@@ -235,6 +251,43 @@ final class Contacts extends Resource
     public function deleteCard(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call($this->fill(ApiPaths::CONTACT_CARD, id: $id), 'DELETE', apiKey: $apiKey);
+    }
+
+    public function importVcf(mixed $data, ?string $filename = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(
+            ApiPaths::CONTACT_IMPORTS,
+            'POST',
+            query: $this->query(filename: $filename),
+            raw: $data,
+            contentType: Protocol::CONTENT_TYPES['VCARD'],
+            apiKey: $apiKey,
+        );
+    }
+
+    public function listImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): Page
+    {
+        return $this->fetchPage(ApiPaths::CONTACT_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function listAllImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->collectAll(ApiPaths::CONTACT_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function iterateImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): \Generator
+    {
+        return $this->iteratePages(ApiPaths::CONTACT_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function getImport(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CONTACT_IMPORT, id: $id), apiKey: $apiKey);
+    }
+
+    public function undoImport(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CONTACT_IMPORT_UNDO, id: $id), 'POST', apiKey: $apiKey);
     }
 
     private function peopleQuery(?string $q, ?string $email, ?string $sort, ?bool $blocked): array

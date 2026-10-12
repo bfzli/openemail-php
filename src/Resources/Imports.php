@@ -67,6 +67,26 @@ final class Imports extends Resource
         return $this->call($this->fill(ApiPaths::IMPORT_UPLOAD, id: $id), 'DELETE', apiKey: $apiKey);
     }
 
+    public function discoverMailbox(string $email, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::IMPORT_MAILBOX_SETTINGS, query: $this->query(email: $email), apiKey: $apiKey);
+    }
+
+    public function checkMailbox(#[\SensitiveParameter] array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::IMPORT_MAILBOX_CHECK, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function connectMailbox(#[\SensitiveParameter] array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::IMPORT_MAILBOX, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function resume(string $id, #[\SensitiveParameter] ?array $body = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::IMPORT_RESUME, id: $id), 'POST', body: $this->payload($body), apiKey: $apiKey);
+    }
+
     public function importFiles(array $input, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         $files = array_map(self::source(...), array_values(\is_array($input['files'] ?? null) ? $input['files'] : []));

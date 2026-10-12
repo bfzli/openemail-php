@@ -131,6 +131,43 @@ final class Calendar extends Resource
         return $this->call($this->fill(ApiPaths::CALENDAR_SUBSCRIPTION, id: $id), 'DELETE', apiKey: $apiKey);
     }
 
+    public function importIcs(mixed $data, ?string $filename = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(
+            ApiPaths::CALENDAR_IMPORTS,
+            'POST',
+            query: $this->query(filename: $filename),
+            raw: $data,
+            contentType: Protocol::CONTENT_TYPES['CALENDAR'],
+            apiKey: $apiKey,
+        );
+    }
+
+    public function listImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): Page
+    {
+        return $this->fetchPage(ApiPaths::CALENDAR_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function listAllImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->collectAll(ApiPaths::CALENDAR_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function iterateImports(?int $limit = null, ?string $cursor = null, #[\SensitiveParameter] ?string $apiKey = null): \Generator
+    {
+        return $this->iteratePages(ApiPaths::CALENDAR_IMPORTS, limit: $limit, cursor: $cursor, apiKey: $apiKey);
+    }
+
+    public function getImport(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_IMPORT, id: $id), apiKey: $apiKey);
+    }
+
+    public function undoImport(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::CALENDAR_IMPORT_UNDO, id: $id), 'POST', apiKey: $apiKey);
+    }
+
     private function rangeQuery(string|\DateTimeInterface $from, string|\DateTimeInterface $to, ?string $timezone): array
     {
         return $this->query(from: $this->instant($from), to: $this->instant($to), timezone: $timezone);

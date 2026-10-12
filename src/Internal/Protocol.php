@@ -12,6 +12,7 @@ final class Protocol
     public const CONTENT_TYPES = [
         'JSON' => 'application/json',
         'CALENDAR' => 'text/calendar',
+        'VCARD' => 'text/vcard',
         'OCTET_STREAM' => 'application/octet-stream',
     ];
     public const CURSOR_STYLES = [
@@ -148,6 +149,11 @@ final class Protocol
         'PEOPLE' => 'people',
         'AI_ACTIONS' => 'aiActions',
         'INTERVAL' => 'interval',
+        'CATEGORY' => 'category',
+        'DEEP' => 'deep',
+        'PATH' => 'path',
+        'STEP_KEY' => 'stepKey',
+        'NAME' => 'name',
     ];
     public const RETRY = [
         'STATUSES' => [408, 429, 500, 502, 503, 504],

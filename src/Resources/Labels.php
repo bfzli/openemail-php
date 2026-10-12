@@ -44,6 +44,11 @@ final class Labels extends Resource
         return $this->call($this->fill(ApiPaths::LABEL, id: $id), 'PATCH', body: $patch, repeatable: true, apiKey: $apiKey);
     }
 
+    public function test(string $id, ?array $body = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::LABEL_TEST, id: $id), 'POST', body: $this->payload($body), apiKey: $apiKey);
+    }
+
     public function delete(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call($this->fill(ApiPaths::LABEL, id: $id), 'DELETE', apiKey: $apiKey);

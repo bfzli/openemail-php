@@ -58,6 +58,21 @@ final class Billing extends Resource
         return $this->call(ApiPaths::BILLING_CHECKOUT, 'POST', body: $body, apiKey: $apiKey);
     }
 
+    public function listAddOns(#[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::BILLING_ADD_ONS, apiKey: $apiKey);
+    }
+
+    public function startAddOnCheckout(array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::BILLING_ADD_ON_CHECKOUT, 'POST', body: $body, apiKey: $apiKey);
+    }
+
+    public function cancelAddOn(string $addOn, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::BILLING_ADD_ON, addOn: $addOn), 'DELETE', apiKey: $apiKey);
+    }
+
     public function openPortal(?array $body = null, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call(ApiPaths::BILLING_PORTAL, 'POST', body: $this->payload($body), apiKey: $apiKey);

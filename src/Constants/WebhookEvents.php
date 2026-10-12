@@ -30,6 +30,10 @@ final class WebhookEvents
     public const FILE_DELETED = 'file.deleted';
     public const FORM_SUBMITTED = 'form.submitted';
     public const FORM_CONFIRMED = 'form.confirmed';
+    public const AUTOMATION_ENTERED = 'automation.entered';
+    public const AUTOMATION_EXITED = 'automation.exited';
+    public const AUTOMATION_PAUSED = 'automation.paused';
+    public const AUTOMATION_WEBHOOK = 'automation.webhook';
 
     public static function values(): array
     {
@@ -58,6 +62,10 @@ final class WebhookEvents
             self::FILE_DELETED,
             self::FORM_SUBMITTED,
             self::FORM_CONFIRMED,
+            self::AUTOMATION_ENTERED,
+            self::AUTOMATION_EXITED,
+            self::AUTOMATION_PAUSED,
+            self::AUTOMATION_WEBHOOK,
         ];
     }
 }

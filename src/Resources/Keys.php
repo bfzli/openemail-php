@@ -57,6 +57,8 @@ final class Keys extends Resource
     public function listRequests(
         string $id,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -64,12 +66,14 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): Page {
-        return $this->fetchPage($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->fetchPage($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly, $statuses, $path), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function listAllRequests(
         string $id,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -77,12 +81,14 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): array {
-        return $this->collectAll($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->collectAll($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly, $statuses, $path), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function iterateRequests(
         string $id,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -90,7 +96,7 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): \Generator {
-        return $this->iteratePages($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->iteratePages($this->fill(ApiPaths::KEY_REQUESTS, id: $id), $this->requestQuery($since, $until, $failedOnly, $statuses, $path), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function listActivity(
@@ -132,6 +138,8 @@ final class Keys extends Resource
     public function listWorkspaceRequests(
         string|array|null $keyIds = null,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -139,12 +147,14 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): Page {
-        return $this->fetchPage(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->fetchPage(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $statuses, $path, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function listAllWorkspaceRequests(
         string|array|null $keyIds = null,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -152,12 +162,14 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): array {
-        return $this->collectAll(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->collectAll(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $statuses, $path, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function iterateWorkspaceRequests(
         string|array|null $keyIds = null,
         ?bool $failedOnly = null,
+        string|array|null $statuses = null,
+        ?string $path = null,
         string|\DateTimeInterface|null $since = null,
         string|\DateTimeInterface|null $until = null,
         ?int $limit = null,
@@ -165,7 +177,7 @@ final class Keys extends Resource
         #[\SensitiveParameter]
         ?string $apiKey = null,
     ): \Generator {
-        return $this->iteratePages(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
+        return $this->iteratePages(ApiPaths::KEYS_REQUESTS, $this->workspaceRequestQuery($since, $until, $failedOnly, $statuses, $path, $keyIds), limit: $limit, cursor: $cursor, apiKey: $apiKey);
     }
 
     public function listWorkspaceActivity(
@@ -218,23 +230,15 @@ final class Keys extends Resource
         return $this->call(ApiPaths::KEYS_STATS, query: $query, apiKey: $apiKey);
     }
 
-    private function windowQuery(string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until): array
-    {
-        return $this->query(since: $this->instant($since), until: $this->instant($until));
-    }
-
-    private function requestQuery(string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until, ?bool $failedOnly): array
-    {
-        return [...$this->windowQuery($since, $until), ...$this->query(failedOnly: $this->flag($failedOnly))];
-    }
-
     private function workspaceRequestQuery(
         string|\DateTimeInterface|null $since,
         string|\DateTimeInterface|null $until,
         ?bool $failedOnly,
+        string|array|null $statuses,
+        ?string $path,
         string|array|null $keyIds,
     ): array {
-        return [...$this->requestQuery($since, $until, $failedOnly), ...$this->query(keyIds: $this->joined($keyIds))];
+        return [...$this->requestQuery($since, $until, $failedOnly, $statuses, $path), ...$this->query(keyIds: $this->joined($keyIds))];
     }
 
     private function workspaceActivityQuery(string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until, string|array|null $keyIds): array

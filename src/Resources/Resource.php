@@ -133,6 +133,21 @@ abstract class Resource
         return Wire::body($body);
     }
 
+    protected function windowQuery(string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until): array
+    {
+        return $this->query(since: $this->instant($since), until: $this->instant($until));
+    }
+
+    protected function requestQuery(
+        string|\DateTimeInterface|null $since,
+        string|\DateTimeInterface|null $until,
+        ?bool $failedOnly,
+        string|array|null $statuses,
+        ?string $path,
+    ): array {
+        return [...$this->windowQuery($since, $until), ...$this->query(failedOnly: $this->flag($failedOnly), status: $this->joined($statuses), path: $path)];
+    }
+
     protected function fetchPage(
         string $path,
         ?array $query = null,

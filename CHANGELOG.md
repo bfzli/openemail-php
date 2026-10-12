@@ -1,5 +1,302 @@
 # Changelog
 
+## 0.0.3
+
+### Added
+
+A sign-up form field can now fill the contact's card, not only its name. `mapsTo` on a form field
+takes five more values, and `OpenEmail\Constants\FormContactFields` holds them: `phone` on a `phone` field, `company` and
+`jobTitle` on a `text` field, `website` on a `url` field and `birthday` on a `date` field.
+When a sign-up is accepted the answers are saved on the contact card where the card has nothing
+yet: a company, job title or birthday already on the card is kept, and a phone number or website
+the card already lists is not added twice.
+
+`contacts.get`, and every other call that returns one contact with its audiences, now answers
+with `signUps` for a key that also holds `forms:read`: what the address sent through sign-up
+forms, newest first and at most 20, each an array with the form, the status and every answer.
+
+`threads->mute()` and `threads->unmute()` mute a conversation and take the mute off, as Mute does in
+the app. A muted thread in the inbox moves to the archive, and new mail in it goes straight to the
+archive, unread, with no push, sound or desktop notice. Muting is for the whole workspace, a muted
+thread carries the built-in `MUTE` label, and `is:muted` finds it in `query:`. Both need
+`threads:write`, and the SDK retries them.
+
+    $muted = $client->threads->mute($threadId);
+    echo $muted['muted'] ? 'muted' : 'not muted', PHP_EOL;
+
+    $client->threads->unmute($threadId);
+
+The inbox has tabs: Primary, Promotions, Updates, Social and Forums. `threads->list()`, `listAll()`
+and `iterate()` take `category:` to read one tab, and `category:promotions` filters the same way in
+`query:`. `threads->counts()` returns `categories`, the conversations and unread conversations of
+the inbox in each tab. `threads->listSenderCategories()`, `setSenderCategory()` and
+`clearSenderCategory()` manage the senders whose mail always goes to one tab, whatever the sorting
+rules would say. Saving a choice also moves the inbox threads whose newest message is from that
+sender, up to the newest 1,000. Reading needs `threads:read` and every change `threads:write`, and
+a key limited to particular addresses or domains can read the choices but not change them. The new
+`category:` argument sits before `address:`, `limit:`, `cursor:` and `apiKey:`, so pass the
+arguments after it by name. New constant class: `InboxCategories`.
+
+    $offers = $client->threads->list(category: InboxCategories::PROMOTIONS);
+    echo count($offers), PHP_EOL;
+
+    $client->threads->setSenderCategory('news@example.com', InboxCategories::PRIMARY);
+
+    foreach ($client->threads->counts()['categories'] as $tab) {
+        echo $tab['category'], ': ', $tab['unread'], PHP_EOL;
+    }
+
+A `followUps` namespace holds the reminders on mail you sent. `set()` asks for a thread to come back
+to the top of the inbox, unread, with the built-in `FOLLOW_UP` label and a push, if nobody replies
+by `remindAt`. A real reply closes the reminder by itself, and a thread holds one waiting reminder
+per person, so setting another moves the time. `list()` reads the reminders still waiting and the
+ones that ended, with `status:`, `threadId:` and `limit:`, and `cancel()` cancels one.
+`emails->send()` and each message of `emails->sendBatch()` take `followUpAt` to set a reminder as
+the message goes out: a `DateTimeInterface`, an ISO 8601 instant or a duration such as `P3D`, later
+than the time the message goes out. Reading needs `threads:read` and every change `threads:write`.
+New constant class: `FollowUpStatuses`.
+
+    $client->emails->send([
+        'from' => 'ada@example.com',
+        'to' => 'grace@example.com',
+        'subject' => 'Contract draft',
+        'text' => 'The draft is attached. Can you look at it this week?',
+        'followUpAt' => 'P3D',
+    ]);
+
+    foreach ($client->followUps->list(status: FollowUpStatuses::WAITING) as $reminder) {
+        echo $reminder['subject'], ' ', $reminder['remindAt'], PHP_EOL;
+    }
+
+An `outOfOffice` namespace manages the automatic reply an address sends while its owner is away.
+`set()` saves the reply of one address, or of a catch-all with `*@example.com`, with its message,
+subject, start, end and `contactsOnly`, replacing whatever was saved. While it is active, each
+person who writes gets the message once for the whole away period, and spam, bulk mail, automatic
+mail and bounces get no reply. `list()` reads every reply saved in the workspace, or the reply of
+one address with `address:`, and `clear()` removes one. Reading needs `settings:read` and every
+change `settings:write`.
+
+    $reply = $client->outOfOffice->set('ada@example.com', [
+        'endsAt' => new DateTimeImmutable('2027-01-04T08:00:00Z'),
+        'message' => 'I am away until 4 January and will answer when I am back.',
+    ]);
+    echo $reply['active'] ? 'answering' : 'not answering yet', PHP_EOL;
+
+    $client->outOfOffice->clear('ada@example.com');
+
+Labels can be applied by AI. `labels->create()` and `labels->update()` take `aiInstructions`, what
+the label is for in plain words, and `aiEnabled`, which has AI read each arriving message against
+them and add the label when it fits. It only labels and never archives or moves mail. Turning it on
+needs instructions and a paid plan, and a workspace may have 10 such labels. `labels->test()` runs
+the AI over the newest 20 inbox threads and returns the ones the label would catch, without
+labelling anything, with the saved instructions or wording you have not saved yet. It needs
+`labels:write` and `threads:read`, and spends one AI action. Every label carries `aiInstructions`
+and `aiEnabled`.
+
+    $client->labels->update('USER_RECEIPTS', ['aiInstructions' => 'invoices and receipts', 'aiEnabled' => true]);
+
+    $result = $client->labels->test('USER_RECEIPTS');
+    echo count($result['matched']), ' of ', $result['examined'], PHP_EOL;
+
+`settings->get()` and `settings->update()` carry three more account settings: `inboxTabs` shows the
+inbox as tabs, `primaryOnlyAlerts` keeps pushes, sounds and desktop notifications to mail sorted
+into Primary while tabs are on, and `phoneFollowUps` sends a push when a reminder comes due.
+
+    $client->settings->update(['inboxTabs' => true, 'primaryOnlyAlerts' => true]);
+
+Mail travels in two lanes, so a newsletter cannot hold up or harm app mail. `emails->send()`, each
+message of `emails->sendBatch()` and `templates->send()` take `stream`: `transactional`, the
+default, for mail one person is waiting for, or `broadcast` for newsletters. Every email carries the
+`stream` it went out on, and every copy of a broadcast is on the broadcast lane. A new `sending`
+namespace reads the lanes: `listStreams()` returns both with their state and their numbers for the
+last 7 days, which are recipients, bounces, complaints and the two rates. The broadcast lane pauses
+itself above 4% bounces or 0.2% complaints, a send to it is then 409 `stream_paused`, and app mail
+keeps going. `resumeStream()` resumes it, for the workspace owner, and asks an app for a
+verification code. Reading needs `emails:read` and resuming `domains:write`. New constant classes:
+`SendStreams`, `SendingStreamStatuses` and `SendingStreamPauseReasons`.
+
+    use OpenEmail\Constants\SendStreams;
+
+    $client->emails->send([
+        'from' => 'news@acme.com',
+        'to' => 'ada@example.com',
+        'subject' => 'What is new in October',
+        'text' => 'Three things shipped this month.',
+        'stream' => SendStreams::BROADCAST,
+    ]);
+
+    foreach ($client->sending->listStreams()['data'] as $lane) {
+        echo $lane['stream'], ' ', $lane['status'], ' ', $lane['window']['bounceRate'], PHP_EOL;
+    }
+
+`tools->checkAddress()` says whether an address is worth sending to before the first message:
+`valid`, `risky`, `invalid` or `unknown`, with the reasons. It checks the syntax, whether the domain
+takes mail, throwaway domains and shared addresses such as `info@`, and suggests a correction for a
+likely typo. With `emails:read` it adds what the workspace knows, whether it suppressed the address
+and when it last delivered to it or saw it bounce. `deep: true` also asks whether the mailbox
+exists, billed per address through pay as you go, and needs `emails:send`. `tools->checkAddresses()`
+checks up to 100 in one call. New constant classes: `AddressCheckResults`, `AddressCheckReasons`,
+`AddressMxStatuses` and `AddressConfidences`.
+
+    $check = $client->tools->checkAddress('ada@gmial.com');
+
+    if ($check['result'] !== 'valid') {
+        echo implode(', ', $check['reasons']), ' ', $check['suggestion'] ?? '', PHP_EOL;
+    }
+
+A workspace on Business or Enterprise that sends at least 100,000 emails a month can buy a dedicated
+sending IP. `billing->listAddOns()` says whether it is for sale, what it costs, whether the
+workspace qualifies and whether it has one. `billing->startAddOnCheckout()` returns the link where
+the person pays, and `billing->cancelAddOn()` ends it at the end of the month already paid for.
+`sending->listDedicatedIps()` and `sending->getDedicatedIp()` read each IP with its `status` and
+`warmupPercent`, since a new IP is warmed up over several weeks. Billing calls need `billing:read`
+and `billing:write`, belong to the workspace owner and ask an app for a verification code, and
+reading the IPs needs `domains:read`. New constant classes: `AddOns`,
+`DedicatedIpIneligibleReasons`, `DedicatedIpStatuses` and `SendingPoolStatuses`.
+
+    use OpenEmail\Constants\AddOns;
+
+    $checkout = $client->billing->startAddOnCheckout(['addOn' => AddOns::DEDICATED_IP]);
+    echo 'Pay here: ', $checkout['url'], PHP_EOL;
+
+    foreach ($client->sending->listDedicatedIps()['data'] as $address) {
+        echo $address['ip'], ' ', $address['status'], ' ', $address['warmupPercent'], PHP_EOL;
+    }
+
+`domains->getMailAppSettings()` returns `smtpSubmission`, the SMTP server on port 587 for apps,
+devices and libraries that only offer STARTTLS. Its `security` is `starttls`, a new member of
+`MailAppSecurities`, and it takes the same username and app password as `smtp`.
+
+    $settings = $client->domains->getMailAppSettings($domainId, $addressId);
+    echo $settings['smtpSubmission']['host'], ':', $settings['smtpSubmission']['port'], PHP_EOL;
+
+`imports` can read a live mailbox, as the Migrations page of the app does. `discoverMailbox()` finds
+the mail server for an address and says what the mailbox signs in with. `checkMailbox()` signs in
+once and lists the folders and how many messages an import would bring. `connectMailbox()` starts
+copying the mailbox into one address, with `contacts` and `calendars` to bring those across too.
+The old mailbox is only ever read, a message the address already holds is skipped, and the password
+is kept sealed until the import finishes and for 30 days at most. An import waits by itself when
+the old provider slows it down: `status` is `parked` and `remote.resumeAt` says when. When the
+password stops working it is `needs-password`, and `resume()` sends a new one. They need
+`threads:write`, with `contacts:write` and `calendar:write` for those parts. Every import now
+carries `source`, `remote` and `children`, and `ImportFormats` gains `imap` and `microsoft`. The
+array that holds the password is marked `#[\SensitiveParameter]`, so it stays out of stack traces.
+New constant classes: `ImportStatuses`, `MailboxImportSources`, `MailboxProviders`,
+`MailboxSignIns`, `MailboxSecurities`, `MailboxSettingsSources`, `MailboxFolderRoles` and
+`ImportPauseReasons`.
+
+    $settings = $client->imports->discoverMailbox('ada@gmail.com');
+
+    $check = $client->imports->checkMailbox([
+        'email' => 'ada@gmail.com',
+        'password' => (string) getenv('OLD_MAILBOX_PASSWORD'),
+    ]);
+    echo $settings['provider'], ' ', $check['messages'], PHP_EOL;
+
+    $import = $client->imports->connectMailbox([
+        'addressId' => 'addr_2b7e',
+        'email' => 'ada@gmail.com',
+        'password' => (string) getenv('OLD_MAILBOX_PASSWORD'),
+        'contacts' => true,
+    ]);
+    echo $import['status'], ' ', $import['remote']['host'] ?? '', PHP_EOL;
+
+`calendar->importIcs()` and `contacts->importVcf()` take an iCalendar or vCard file as a string of
+bytes, a stream resource, an `SplFileInfo` or a PSR-7 stream and queue it. Events become events of
+your own and nobody on them is sent anything, and cards become contact cards that join no audience.
+What is already here is left as it is and counted, so sending a file twice adds nothing.
+`listImports()`, `listAllImports()` and `iterateImports()` read the imports of each kind, newest
+first, with the calendars and address books that came with a mailbox import. `getImport()` reads
+one with its counts and a report of what it left out and why, and `undoImport()` deletes everything
+an import added. Reading needs `calendar:read` or `contacts:read`, and the rest `calendar:write` or
+`contacts:write`. New constant classes: `ItemImportKinds`, `ItemImportSources`,
+`ItemImportStatuses` and `ItemImportSkipReasons`.
+
+    $queued = $client->calendar->importIcs(new SplFileInfo('work.ics'), filename: 'work.ics');
+
+    $done = $client->calendar->getImport($queued['id']);
+    echo $done['status'], ' ', $done['counts']['imported'], ' ', $done['counts']['skipped'], PHP_EOL;
+
+    $client->calendar->undoImport($queued['id']);
+
+A key can read its own request log, its own history and its own figures with no scope at all, so a
+key that can only send can still watch itself. `me->listRequests()`, `me->listActivity()` and
+`me->stats()` read the calling key and nothing else, and the two lists come with
+`listAllRequests()`, `iterateRequests()`, `listAllActivity()` and `iterateActivity()`.
+`keys->listRequests()`, `keys->listWorkspaceRequests()` and `keys->stats()` are still the ones that
+reach other keys, behind `keys:read`. `me->stats()` fills `sends` only when the key holds
+`emails:read`. Without that scope it is `null`, never zeros. An OAuth access token is refused with
+403 `api_key_only`, because calls made with one are not logged. Every reader of the request log,
+the six in `keys` and the three in `me`, also takes two more filters. `statuses:` keeps the calls
+answered with one of up to 20 exact HTTP status codes, as an array or one comma-separated string,
+and `path:` keeps the calls to one route, whatever the method. `path:` matches the route, not the
+exact path: an id counts as `:id` and an email address as `:address`, so `/emails/:id` reads the
+calls made to any single email, and a path that ends in `*` reads every route that starts with it.
+Both combine with `failedOnly:`, `since:` and `until:`. On the readers in `keys` the new arguments
+sit after `failedOnly:` and before `since:`, `until:`, `limit:`, `cursor:` and `apiKey:`, so pass
+the arguments after them by name.
+
+    $throttled = $client->me->listRequests(statuses: [429], since: '2026-10-01T00:00:00Z');
+    echo count($throttled), PHP_EOL;
+
+    $stats = $client->me->stats(grain: 'hour');
+    echo $stats['sends']['totals']['sends'] ?? 'this key cannot read its sends', PHP_EOL;
+
+    foreach ($client->keys->listWorkspaceRequests(path: '/emails', statuses: [403, 422]) as $call) {
+        echo $call['keyName'], ' ', $call['status'], ' ', $call['errorCode'] ?? '', PHP_EOL;
+    }
+
+An `automations` namespace holds emails and other steps that run by themselves for each contact: a
+welcome series when somebody joins an audience, a nudge after a trial starts, a note on a birthday.
+An automation has a trigger and steps (send an email from a template, wait, branch, add to or remove
+from an audience, write a custom field, call a webhook, exit). You edit a draft `definition` and
+`publish()` it, which saves a numbered version and sets the automation live, and each contact stays
+on the version they entered on. `list()`, `listAll()`, `iterate()`, `get()`, `create()`, `update()`
+and `delete()` manage them, `listStarters()` returns ready-made definitions, `pause()`, `resume()`,
+`archive()` and `duplicate()` change their state, `sendTest()` sends the email of one step to one
+address, `listVersions()` and `restoreVersion()` read the published versions and copy one back into
+the draft, and `stats()` returns totals, per-step numbers and a daily series. `listEnrollments()`,
+`listAllEnrollments()`, `iterateEnrollments()` and `getEnrollment()` read who is in an automation
+and what each step did for them, `enroll()` puts a contact in and `exitEnrollment()` takes one out.
+Reading needs `automations:read` and every change `automations:write`. `publish()`, `resume()` and
+`sendTest()` also need `emails:send`. A draft that cannot run is refused with 422
+`invalid_automation`, and `problems` on the error lists every problem that blocks it. New constant
+classes: `AutomationStatuses`, `AutomationTriggerKinds`, `AutomationStepKinds`,
+`AutomationWaitModes`, `AutomationDurationUnits`, `AutomationConditionKinds`,
+`AutomationFieldOperators`, `AutomationDateFields`, `AutomationValueSources`,
+`AutomationEnrollmentStatuses`, `AutomationEnrollmentSources`, `AutomationExitReasons`,
+`AutomationHoldReasons`, `AutomationPauseReasons` and `AutomationRunOutcomes`.
+
+    $automation = $client->automations->create(['name' => 'Welcome series', 'starter' => 'welcome-series']);
+
+    foreach ($automation['problems'] as $problem) {
+        echo $problem['path'], ': ', $problem['message'], PHP_EOL;
+    }
+
+    $live = $client->automations->publish($automation['id']);
+    echo $live['status'], ', version ', $live['publishedVersion'], PHP_EOL;
+
+An `events` namespace records what your contacts did, from your own code. `send()` stores one event
+against a contact, starts every live automation whose trigger names it and ends the waits that were
+holding out for it. `sendBatch()` records up to 100 in one call and reports per event, and
+`listNames()` returns the event names the workspace has seen. Both sends carry an `Idempotency-Key`,
+generated per call or passed as `idempotencyKey:`, so a retry never records an event twice.
+`contacts->listEvents()`, `listAllEvents()` and `iterateEvents()` read the events of one contact.
+Sending needs `contacts:write`, reading the events of a contact `contacts:read`, and `listNames()`
+`automations:read`. A key or an app may send 600 events a minute.
+
+    $event = $client->events->send([
+        'name' => 'order.placed',
+        'email' => 'ada@example.com',
+        'properties' => ['orderId' => 'AC-4192'],
+        'createContact' => true,
+    ]);
+    echo count($event['enrolled']), ' automations started', PHP_EOL;
+
+`WebhookEvents` gained `AUTOMATION_ENTERED`, `AUTOMATION_EXITED`, `AUTOMATION_PAUSED` and
+`AUTOMATION_WEBHOOK`. Like `form.*`, the events belong to the whole workspace, have to be named in
+`eventTypes`, and never reach an endpoint limited to some addresses or domains.
+
 ## 0.0.2
 
 ### Added

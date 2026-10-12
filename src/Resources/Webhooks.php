@@ -233,11 +233,6 @@ final class Webhooks extends Resource
         return $this->call(ApiPaths::WEBHOOKS_STATS, query: $query, apiKey: $apiKey);
     }
 
-    private function windowQuery(string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until): array
-    {
-        return $this->query(since: $this->instant($since), until: $this->instant($until));
-    }
-
     private function deliveryQuery(?string $status, string|\DateTimeInterface|null $since, string|\DateTimeInterface|null $until): array
     {
         return [...$this->windowQuery($since, $until), ...$this->query(status: $status)];

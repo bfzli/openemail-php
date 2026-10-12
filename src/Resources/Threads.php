@@ -19,6 +19,7 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
         ?bool $semantic = null,
+        ?string $category = null,
         ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
@@ -27,7 +28,7 @@ final class Threads extends Resource
     ): Page {
         return $this->fetchPage(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $category, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -44,6 +45,7 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
         ?bool $semantic = null,
+        ?string $category = null,
         ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
@@ -52,7 +54,7 @@ final class Threads extends Resource
     ): array {
         return $this->collectAll(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $category, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -69,6 +71,7 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateTo = null,
         ?bool $fromContacts = null,
         ?bool $semantic = null,
+        ?string $category = null,
         ?string $address = null,
         ?int $limit = null,
         ?string $cursor = null,
@@ -77,7 +80,7 @@ final class Threads extends Resource
     ): \Generator {
         return $this->iteratePages(
             ApiPaths::THREADS,
-            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $address),
+            $this->listQuery($folder, $query, $labelIds, $sort, $dateFrom, $dateTo, $fromContacts, $semantic, $category, $address),
             self::PAGE_TOKEN,
             $limit,
             $cursor,
@@ -114,6 +117,16 @@ final class Threads extends Resource
     public function unsnooze(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
     {
         return $this->call($this->fill(ApiPaths::THREAD_UNSNOOZE, id: $id), 'POST', repeatable: true, apiKey: $apiKey);
+    }
+
+    public function mute(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::THREAD_MUTE, id: $id), 'POST', repeatable: true, apiKey: $apiKey);
+    }
+
+    public function unmute(string $id, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::THREAD_UNMUTE, id: $id), 'POST', repeatable: true, apiKey: $apiKey);
     }
 
     public function listAttachments(string $id, string $messageId, #[\SensitiveParameter] ?string $apiKey = null): array
@@ -189,6 +202,27 @@ final class Threads extends Resource
         return $this->call($this->fill(ApiPaths::THREAD_EVENT, id: $id), apiKey: $apiKey);
     }
 
+    public function listSenderCategories(#[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->fetchList(ApiPaths::SENDER_CATEGORIES, apiKey: $apiKey);
+    }
+
+    public function setSenderCategory(string $email, string $category, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(
+            $this->fill(ApiPaths::SENDER_CATEGORY, email: $email),
+            'PUT',
+            body: ['category' => $category],
+            repeatable: true,
+            apiKey: $apiKey,
+        );
+    }
+
+    public function clearSenderCategory(string $email, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call($this->fill(ApiPaths::SENDER_CATEGORY, email: $email), 'DELETE', apiKey: $apiKey);
+    }
+
     private function listQuery(
         ?string $folder,
         ?string $query,
@@ -198,6 +232,7 @@ final class Threads extends Resource
         string|\DateTimeInterface|null $dateTo,
         ?bool $fromContacts,
         ?bool $semantic,
+        ?string $category,
         ?string $address,
     ): array {
         return $this->query(
@@ -209,6 +244,7 @@ final class Threads extends Resource
             dateTo: $this->instant($dateTo),
             fromContacts: $this->flag($fromContacts),
             semantic: $this->flag($semantic),
+            category: $category,
             address: $address,
         );
     }

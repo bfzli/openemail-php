@@ -16,6 +16,7 @@ use OpenEmail\Resources\Addresses;
 use OpenEmail\Resources\Analytics;
 use OpenEmail\Resources\AppHost;
 use OpenEmail\Resources\Audiences;
+use OpenEmail\Resources\Automations;
 use OpenEmail\Resources\Billing;
 use OpenEmail\Resources\Branding;
 use OpenEmail\Resources\Broadcasts;
@@ -27,8 +28,10 @@ use OpenEmail\Resources\Domains;
 use OpenEmail\Resources\Drafts;
 use OpenEmail\Resources\Emails;
 use OpenEmail\Resources\Encryption;
+use OpenEmail\Resources\Events;
 use OpenEmail\Resources\Exports;
 use OpenEmail\Resources\Files;
+use OpenEmail\Resources\FollowUps;
 use OpenEmail\Resources\Forms;
 use OpenEmail\Resources\Imports;
 use OpenEmail\Resources\Keys;
@@ -37,11 +40,13 @@ use OpenEmail\Resources\Labels;
 use OpenEmail\Resources\Languages;
 use OpenEmail\Resources\Me;
 use OpenEmail\Resources\Members;
+use OpenEmail\Resources\OutOfOffice;
 use OpenEmail\Resources\ProviderImports;
 use OpenEmail\Resources\Roles;
 use OpenEmail\Resources\Rules;
 use OpenEmail\Resources\Security;
 use OpenEmail\Resources\Senders;
+use OpenEmail\Resources\Sending;
 use OpenEmail\Resources\Settings;
 use OpenEmail\Resources\Subscriptions;
 use OpenEmail\Resources\Support;
@@ -56,7 +61,7 @@ use OpenEmail\Resources\Workspaces;
 
 final class OpenEmail
 {
-    public const VERSION = '0.0.2';
+    public const VERSION = '0.0.3';
 
     private static ?self $default = null;
 
@@ -82,6 +87,8 @@ final class OpenEmail
 
     public readonly Threads $threads;
 
+    public readonly FollowUps $followUps;
+
     public readonly Drafts $drafts;
 
     public readonly Labels $labels;
@@ -93,6 +100,10 @@ final class OpenEmail
     public readonly Billing $billing;
 
     public readonly Forms $forms;
+
+    public readonly Automations $automations;
+
+    public readonly Events $events;
 
     public readonly Broadcasts $broadcasts;
 
@@ -114,11 +125,15 @@ final class OpenEmail
 
     public readonly Settings $settings;
 
+    public readonly OutOfOffice $outOfOffice;
+
     public readonly Roles $roles;
 
     public readonly Members $members;
 
     public readonly Suppressions $suppressions;
+
+    public readonly Sending $sending;
 
     public readonly Files $files;
 
@@ -191,12 +206,15 @@ final class OpenEmail
         $this->templates = new Templates($this->raw);
         $this->tracking = new Tracking($this->raw);
         $this->threads = new Threads($this->raw);
+        $this->followUps = new FollowUps($this->raw);
         $this->drafts = new Drafts($this->raw);
         $this->labels = new Labels($this->raw);
         $this->contacts = new Contacts($this->raw);
         $this->audiences = new Audiences($this->raw);
         $this->billing = new Billing($this->raw);
         $this->forms = new Forms($this->raw);
+        $this->automations = new Automations($this->raw);
+        $this->events = new Events($this->raw);
         $this->broadcasts = new Broadcasts($this->raw);
         $this->domains = new Domains($this->raw);
         $this->appHost = new AppHost($this->raw);
@@ -207,9 +225,11 @@ final class OpenEmail
         $this->providerImports = new ProviderImports($this->raw);
         $this->calendar = new Calendar($this->raw);
         $this->settings = new Settings($this->raw);
+        $this->outOfOffice = new OutOfOffice($this->raw);
         $this->roles = new Roles($this->raw);
         $this->members = new Members($this->raw);
         $this->suppressions = new Suppressions($this->raw);
+        $this->sending = new Sending($this->raw);
         $this->files = new Files($this->raw);
         $this->knowledge = new Knowledge($this->raw);
         $this->tempMail = new TempMail($this->raw);

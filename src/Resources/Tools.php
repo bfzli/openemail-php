@@ -28,6 +28,16 @@ final class Tools extends Resource
         return $this->call(ApiPaths::TOOLS_VERIFICATION_CODE, 'POST', body: $body, apiKey: $apiKey);
     }
 
+    public function checkAddress(string $email, ?bool $deep = null, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::TOOLS_ADDRESS, query: $this->query(email: $email, deep: $deep), apiKey: $apiKey);
+    }
+
+    public function checkAddresses(array $body, #[\SensitiveParameter] ?string $apiKey = null): array
+    {
+        return $this->call(ApiPaths::TOOLS_ADDRESSES, 'POST', body: $body, apiKey: $apiKey);
+    }
+
     public function estimateCost(
         ?int $sends = null,
         ?int $domains = null,

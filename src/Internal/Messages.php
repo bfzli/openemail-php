@@ -38,6 +38,7 @@ final class Messages
     public const ATTACHMENT_CONTENT_SHAPE = 'An attachment\'s content must be base64 text. Encode raw bytes with OpenEmail::toBase64(), or pass an SplFileInfo, a stream resource or a PSR-7 stream, which are read and encoded for you.';
     public const IMPORT_FILE_SHAPE = 'Each file to import must be an array with a name and its data: a string of bytes, a stream resource, an SplFileInfo or a PSR-7 stream.';
     public const BATCH_EMAIL_SHAPE = 'Each email in a batch must be an array, the same shape emails->send takes.';
+    public const BATCH_EVENT_SHAPE = 'Each event in a batch must be an array, the same shape events->send takes.';
     public const ATTACHMENT_SHAPE = 'Each attachment must be an array with filename and content, or with fileId for a file already uploaded to the workspace.';
     public const JSON_ENCODE = 'The request body could not be encoded as JSON: %s. Text must be valid UTF-8 and numbers must be finite.';
     public const BODY_VALUE_SHAPE = 'A request body can hold arrays and other iterables, strings, numbers, booleans, null, dates, enums and JSON-serializable objects, not %s.';
